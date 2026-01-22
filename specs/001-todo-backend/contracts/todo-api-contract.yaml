@@ -1,0 +1,224 @@
+# API Contract: Todo App Backend
+
+## Base URL
+```
+http://localhost:8000/api
+```
+
+## Endpoints
+
+### Create Todo
+```
+POST /todos
+```
+
+#### Request
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "title": "string (required, max 255)",
+  "description": "string (optional, max 1000)",
+  "completed": "boolean (optional, default: false)"
+}
+```
+
+#### Response
+**Status: 201 Created**
+```json
+{
+  "id": 1,
+  "title": "string",
+  "description": "string or null",
+  "completed": false,
+  "created_at": "2026-01-21T10:00:00Z",
+  "updated_at": "2026-01-21T10:00:00Z"
+}
+```
+
+**Status: 400 Bad Request**
+```json
+{
+  "detail": "Validation error message"
+}
+```
+
+### Get All Todos
+```
+GET /todos
+```
+
+#### Response
+**Status: 200 OK**
+```json
+[
+  {
+    "id": 1,
+    "title": "string",
+    "description": "string or null",
+    "completed": false,
+    "created_at": "2026-01-21T10:00:00Z",
+    "updated_at": "2026-01-21T10:00:00Z"
+  }
+]
+```
+
+### Get Single Todo
+```
+GET /todos/{id}
+```
+
+#### Response
+**Status: 200 OK**
+```json
+{
+  "id": 1,
+  "title": "string",
+  "description": "string or null",
+  "completed": false,
+  "created_at": "2026-01-21T10:00:00Z",
+  "updated_at": "2026-01-21T10:00:00Z"
+}
+```
+
+**Status: 404 Not Found**
+```json
+{
+  "detail": "Todo not found"
+}
+```
+
+### Update Todo
+```
+PUT /todos/{id}
+```
+
+#### Request
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "title": "string (required, max 255)",
+  "description": "string (optional, max 1000)",
+  "completed": "boolean (optional)"
+}
+```
+
+#### Response
+**Status: 200 OK**
+```json
+{
+  "id": 1,
+  "title": "string",
+  "description": "string or null",
+  "completed": false,
+  "created_at": "2026-01-21T10:00:00Z",
+  "updated_at": "2026-01-21T10:00:00Z"
+}
+```
+
+**Status: 400 Bad Request**
+```json
+{
+  "detail": "Validation error message"
+}
+```
+
+**Status: 404 Not Found**
+```json
+{
+  "detail": "Todo not found"
+}
+```
+
+### Toggle Todo Completion
+```
+PATCH /todos/{id}/complete
+```
+
+#### Request
+**Headers:**
+```
+Content-Type: application/json
+```
+
+**Body:**
+```json
+{
+  "completed": true
+}
+```
+
+#### Response
+**Status: 200 OK**
+```json
+{
+  "id": 1,
+  "title": "string",
+  "description": "string or null",
+  "completed": true,
+  "created_at": "2026-01-21T10:00:00Z",
+  "updated_at": "2026-01-21T10:00:00Z"
+}
+```
+
+**Status: 404 Not Found**
+```json
+{
+  "detail": "Todo not found"
+}
+```
+
+### Delete Todo
+```
+DELETE /todos/{id}
+```
+
+#### Response
+**Status: 204 No Content**
+
+**Status: 404 Not Found**
+```json
+{
+  "detail": "Todo not found"
+}
+```
+
+## Common Error Responses
+
+### 400 Bad Request
+```json
+{
+  "detail": "Request validation error details"
+}
+```
+
+### 404 Not Found
+```json
+{
+  "detail": "Resource not found"
+}
+}
+
+### 500 Internal Server Error
+```json
+{
+  "detail": "Internal server error"
+}
+```
+
+## HTTP Status Codes
+- 200 OK: Request successful
+- 201 Created: Resource created successfully
+- 204 No Content: Request successful, no content to return
+- 400 Bad Request: Invalid request data
+- 404 Not Found: Resource does not exist
+- 500 Internal Server Error: Server error occurred

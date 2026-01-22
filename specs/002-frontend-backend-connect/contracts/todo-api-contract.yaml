@@ -1,0 +1,149 @@
+# API Contracts: Frontend ↔ Backend Integration
+
+## Todo API Contract
+
+### Base URL
+`{BACKEND_URL}/api`
+
+### 1. Get All Todos
+- **Endpoint**: `GET /todos`
+- **Description**: Retrieve all todos from the database
+- **Request**:
+  - Headers: None required
+  - Body: None
+- **Response**:
+  - Success (200):
+    ```json
+    {
+      "success": true,
+      "data": [
+        {
+          "id": "1",
+          "title": "Sample todo",
+          "completed": false,
+          "createdAt": "2026-01-22T10:00:00Z",
+          "updatedAt": "2026-01-22T10:00:00Z"
+        }
+      ],
+      "message": "Todos retrieved successfully"
+    }
+    ```
+  - Error (500):
+    ```json
+    {
+      "success": false,
+      "error": {
+        "code": "INTERNAL_ERROR",
+        "message": "Failed to retrieve todos"
+      }
+    }
+    ```
+
+### 2. Create Todo
+- **Endpoint**: `POST /todos`
+- **Description**: Create a new todo in the database
+- **Request**:
+  - Headers: `Content-Type: application/json`
+  - Body:
+    ```json
+    {
+      "title": "New todo title",
+      "completed": false
+    }
+    ```
+- **Response**:
+  - Success (201):
+    ```json
+    {
+      "success": true,
+      "data": {
+        "id": "2",
+        "title": "New todo title",
+        "completed": false,
+        "createdAt": "2026-01-22T10:00:00Z",
+        "updatedAt": "2026-01-22T10:00:00Z"
+      },
+      "message": "Todo created successfully"
+    }
+    ```
+  - Validation Error (422):
+    ```json
+    {
+      "success": false,
+      "error": {
+        "code": "VALIDATION_ERROR",
+        "message": "Validation failed",
+        "details": {
+          "title": "Field is required"
+        }
+      }
+    }
+    ```
+
+### 3. Update Todo
+- **Endpoint**: `PUT /todos/{id}`
+- **Description**: Update an existing todo in the database
+- **Path Parameters**:
+  - `id`: Todo ID (string)
+- **Request**:
+  - Headers: `Content-Type: application/json`
+  - Body:
+    ```json
+    {
+      "title": "Updated todo title",
+      "completed": true
+    }
+    ```
+- **Response**:
+  - Success (200):
+    ```json
+    {
+      "success": true,
+      "data": {
+        "id": "1",
+        "title": "Updated todo title",
+        "completed": true,
+        "createdAt": "2026-01-22T09:00:00Z",
+        "updatedAt": "2026-01-22T10:00:00Z"
+      },
+      "message": "Todo updated successfully"
+    }
+    ```
+  - Not Found (404):
+    ```json
+    {
+      "success": false,
+      "error": {
+        "code": "TODO_NOT_FOUND",
+        "message": "Todo not found"
+      }
+    }
+    ```
+
+### 4. Delete Todo
+- **Endpoint**: `DELETE /todos/{id}`
+- **Description**: Delete an existing todo from the database
+- **Path Parameters**:
+  - `id`: Todo ID (string)
+- **Request**:
+  - Headers: None required
+  - Body: None
+- **Response**:
+  - Success (200):
+    ```json
+    {
+      "success": true,
+      "data": null,
+      "message": "Todo deleted successfully"
+    }
+    ```
+  - Not Found (404):
+    ```json
+    {
+      "success": false,
+      "error": {
+        "code": "TODO_NOT_FOUND",
+        "message": "Todo not found"
+      }
+    }
+    ```
