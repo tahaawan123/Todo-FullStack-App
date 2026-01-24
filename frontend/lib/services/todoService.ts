@@ -50,6 +50,9 @@ export const getAllTodos = async (timeoutMs: number = 10000): Promise<TodoRespon
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 404) {
+        return []; // Return empty array if no todos found
+      }
       throw new Error(`Failed to fetch todos: ${response.status} ${response.statusText}`);
     }
 
@@ -87,6 +90,10 @@ export const createTodo = async (
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 400) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Invalid data provided');
+      }
       throw new Error(`Failed to create todo: ${response.status} ${response.statusText}`);
     }
 
@@ -125,6 +132,13 @@ export const updateTodo = async (
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Task not found');
+      }
+      if (response.status === 400) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Invalid data provided');
+      }
       throw new Error(`Failed to update todo: ${response.status} ${response.statusText}`);
     }
 
@@ -158,6 +172,9 @@ export const deleteTodo = async (id: number, timeoutMs: number = 10000): Promise
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Task not found');
+      }
       throw new Error(`Failed to delete todo: ${response.status} ${response.statusText}`);
     }
 
@@ -195,6 +212,9 @@ export const toggleTodoCompletion = async (
     clearTimeout(timeoutId);
 
     if (!response.ok) {
+      if (response.status === 404) {
+        throw new Error('Task not found');
+      }
       throw new Error(`Failed to toggle todo completion: ${response.status} ${response.statusText}`);
     }
 

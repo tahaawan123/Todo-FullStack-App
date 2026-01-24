@@ -44,10 +44,10 @@ const TodoForm: React.FC<TodoFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="mb-6" role="form" aria-label={isEditing ? "Edit task form" : "Add new task form"}>
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 gap-5">
         <div>
-          <label htmlFor="task-title" className="block text-sm font-medium text-gray-700 mb-1">
-            {isEditing ? 'Edit Task Title' : 'Add Task Title'}
+          <label htmlFor="task-title" className="block text-sm font-medium text-foreground mb-2">
+            {isEditing ? 'Edit Task Title' : 'Add New Task'}
           </label>
           <Input
             id="task-title"
@@ -57,17 +57,17 @@ const TodoForm: React.FC<TodoFormProps> = ({
               maxLength: { value: 200, message: 'Task title is too long' }
             })}
             placeholder="Enter task title..."
-            className={errors.title ? 'border-red-500' : ''}
+            className={errors.title ? 'border-destructive' : ''}
             aria-invalid={!!errors.title}
             aria-describedby={errors.title ? "title-error" : undefined}
           />
           {errors.title && (
-            <p id="title-error" className="mt-1 text-sm text-red-500">{errors.title.message}</p>
+            <p id="title-error" className="mt-1 text-sm text-destructive">{errors.title.message}</p>
           )}
         </div>
 
         <div>
-          <label htmlFor="task-description" className="block text-sm font-medium text-gray-700 mb-1">
+          <label htmlFor="task-description" className="block text-sm font-medium text-foreground mb-2">
             Description (Optional)
           </label>
           <Input
@@ -77,12 +77,12 @@ const TodoForm: React.FC<TodoFormProps> = ({
           />
         </div>
 
-        <div className="flex flex-col sm:flex-row gap-2">
+        <div className="flex flex-col sm:flex-row gap-3 pt-1">
           <Button
             type="submit"
             variant="primary"
             loading={submitLoading}
-            className="w-full sm:w-auto"
+            className="w-full sm:w-auto flex-1 sm:flex-initial"
           >
             {isEditing ? 'Update Task' : 'Add Task'}
           </Button>
@@ -92,7 +92,7 @@ const TodoForm: React.FC<TodoFormProps> = ({
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="w-full sm:w-auto"
+              className="w-full sm:w-auto flex-1 sm:flex-initial"
             >
               Cancel
             </Button>

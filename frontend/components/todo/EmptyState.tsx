@@ -2,11 +2,11 @@ import React from 'react';
 
 const EmptyState: React.FC = () => {
   return (
-    <div className="flex flex-col items-center justify-center py-12 text-center">
-      <div className="mb-4 text-gray-400">
+    <div className="flex flex-col items-center justify-center py-16 text-center">
+      <div className="mb-6 p-4 bg-muted rounded-full">
         <svg
           xmlns="http://www.w3.org/2000/svg"
-          className="h-16 w-16 mx-auto"
+          className="h-12 w-12 mx-auto text-muted-foreground"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
@@ -20,12 +20,12 @@ const EmptyState: React.FC = () => {
           />
         </svg>
       </div>
-      <h3 className="text-lg font-medium text-gray-900 mb-1">No tasks yet</h3>
-      <p className="text-gray-500 mb-4">
+      <h3 className="text-xl font-semibold text-foreground mb-2">No tasks yet</h3>
+      <p className="text-foreground mb-1">
         Get started by creating your first task
       </p>
-      <p className="text-sm text-gray-400">
-        Tasks you add will appear here
+      <p className="text-sm text-muted-foreground mt-2">
+        Your tasks will appear here once you add them
       </p>
     </div>
   );

@@ -1,16 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Task } from '@/lib/types/todo';
 import Button from '@/components/ui/Button';
+import InlineEdit from '@/components/ui/InlineEdit';
+import ConfirmDialog from '@/components/ui/ConfirmDialog';
 
 interface TodoItemProps {
   task: Task;
-  onToggle: (id: string) => void;
-  onEdit: (task: Task) => void;
-  onDelete: (id: string) => void;
-  isEditing?: boolean;
-  editModeId?: string | null;
+  onToggle: (id: number) => void;
+  onEdit: (id: number, updates: Partial<Task>) => void;
+  onDelete: (id: number) => void;
   toggleLoading?: Record<string, boolean>;
   deleteLoading?: Record<string, boolean>;
 }
@@ -20,91 +20,159 @@ const TodoItem: React.FC<TodoItemProps> = ({
   onToggle,
   onEdit,
   onDelete,
-  isEditing,
-  editModeId,
   toggleLoading = {},
   deleteLoading = {}
 }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+
   const handleToggle = () => {
     onToggle(task.id);
   };
 
   const handleEdit = () => {
-    onEdit(task);
+    setIsEditing(true);
+  };
+
+  const handleSaveEdit = (title: string, description?: string) => {
+    onEdit(task.id, { title, description });
+    setIsEditing(false);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
   };
 
   const handleDelete = () => {
+    setShowConfirmDialog(true);
+  };
+
+  const confirmDelete = () => {
     onDelete(task.id);
+    setShowConfirmDialog(false);
+  };
+
+  const closeConfirmDialog = () => {
+    setShowConfirmDialog(false);
   };
 
   return (
-    <li
-      className={`flex flex-col sm:flex-row items-start gap-4 p-4 rounded-lg border ${task.completed ? 'bg-green-50' : 'bg-white'} shadow-sm`}
-      role="listitem"
-    >
-      <div className="flex items-start space-x-3 flex-1 min-w-0">
-        <input
-          type="checkbox"
-          checked={task.completed}
-          onChange={handleToggle}
-          disabled={toggleLoading[task.id]}
-          className="mt-1 h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-2 focus:ring-offset-2"
-          aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
-        />
+    <>
+      <li
+        className={`flex flex-col sm:flex-row items-start gap-4 p-4 rounded-lg border ${
+          task.completed
+            ? 'bg-muted/50 border-success-200 dark:border-success-800'
+            : 'bg-card border-border'
+        } shadow-sm hover:shadow-md transition-all duration-200`}
+        role="listitem"
+      >
+        <div className="flex items-start space-x-3 flex-1 min-w-0">
+          <input
+            type="checkbox"
+            checked={task.completed}
+            onChange={handleToggle}
+            disabled={toggleLoading[task.id]}
+            className="mt-1 h-5 w-5 rounded border-input text-primary focus:ring-primary focus:ring-2 focus:ring-offset-2 cursor-pointer"
+            aria-label={`Mark task "${task.title}" as ${task.completed ? 'incomplete' : 'complete'}`}
+          />
 
-        <div className="flex-1 min-w-0">
-          <h3
-            className={`text-lg font-medium ${task.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}
-            tabIndex={0}
-          >
-            {task.title}
-          </h3>
-          {task.description && (
-            <p
-              className={`mt-1 text-sm ${task.completed ? 'line-through text-gray-400' : 'text-gray-600'}`}
-              tabIndex={0}
-            >
-              {task.description}
-            </p>
-          )}
-          <p className="mt-1 text-xs text-gray-500" tabIndex={0}>
-            Created: {task.createdAt.toLocaleDateString()} at {task.createdAt.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-          </p>
+          <div className="flex-1 min-w-0">
+            {isEditing ? (
+              <InlineEdit
+                value={task.title}
+                description={task.description || undefined}
+                onSave={handleSaveEdit}
+                onCancel={handleCancelEdit}
+                placeholder="Edit task title..."
+              />
+            ) : (
+              <>
+                <h3
+                  className={`text-lg font-medium ${task.completed ? 'line-through text-muted-foreground' : 'text-foreground'}`}
+                  tabIndex={0}
+                >
+                  {task.title}
+                </h3>
+                {task.description && (
+                  <p
+                    className={`mt-1 text-sm ${task.completed ? 'line-through text-muted-foreground' : 'text-muted-foreground'}`}
+                    tabIndex={0}
+                  >
+                    {task.description}
+                  </p>
+                )}
+                <div className="mt-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                  <span>Created:</span>
+                  <span className="font-mono bg-muted px-1.5 py-0.5 rounded break-all">
+                    {new Date(task.createdAt).toLocaleDateString()} at {new Date(task.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-      </div>
 
-      <div className="flex flex-wrap gap-2 mt-2 sm:mt-0">
-        <Button
-          variant={task.completed ? 'secondary' : 'outline'}
-          size="sm"
-          onClick={handleToggle}
-          disabled={toggleLoading[task.id]}
-          aria-label={task.completed ? `Mark "${task.title}" as incomplete` : `Mark "${task.title}" as complete`}
-        >
-          {toggleLoading[task.id] ? '...' : task.completed ? 'Undo' : 'Done'}
-        </Button>
+        {!isEditing && (
+          <div className="flex flex-wrap gap-2 mt-3 sm:mt-0">
+            <Button
+              variant={task.completed ? 'secondary' : 'outline'}
+              size="sm"
+              onClick={handleToggle}
+              disabled={toggleLoading[task.id]}
+              aria-label={task.completed ? `Mark "${task.title}" as incomplete` : `Mark "${task.title}" as complete`}
+            >
+              {toggleLoading[task.id] ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-1 h-3 w-3 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  ...
+                </span>
+              ) : task.completed ? 'Undo' : 'Done'}
+            </Button>
 
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={handleEdit}
-          disabled={isEditing}
-          aria-label={`Edit task "${task.title}"`}
-        >
-          Edit
-        </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleEdit}
+              aria-label={`Edit task "${task.title}"`}
+            >
+              Edit
+            </Button>
 
-        <Button
-          variant="danger"
-          size="sm"
-          onClick={handleDelete}
-          disabled={deleteLoading[task.id]}
-          aria-label={`Delete task "${task.title}"`}
-        >
-          {deleteLoading[task.id] ? 'Deleting...' : 'Delete'}
-        </Button>
-      </div>
-    </li>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDelete}
+              disabled={deleteLoading[task.id]}
+              className={`${deleteLoading[task.id] ? 'text-destructive hover:text-destructive/80' : 'text-destructive hover:text-destructive/80'}`}
+              aria-label={`Delete task "${task.title}"`}
+            >
+              {deleteLoading[task.id] ? (
+                <span className="flex items-center">
+                  <svg className="animate-spin -ml-1 mr-1 h-3 w-3 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Deleting...
+                </span>
+              ) : 'Delete'}
+            </Button>
+          </div>
+        )}
+      </li>
+
+      <ConfirmDialog
+        isOpen={showConfirmDialog}
+        onClose={closeConfirmDialog}
+        onConfirm={confirmDelete}
+        title="Delete Task"
+        description={`Are you sure you want to delete the task "${task.title}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+      />
+    </>
   );
 };
 

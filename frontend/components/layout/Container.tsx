@@ -19,7 +19,7 @@ const Container: React.FC<ContainerProps> = ({
   }[maxWidth];
 
   return (
-    <div className={`mx-auto px-4 ${maxWidthClass} ${className}`} {...props}>
+    <div className={`mx-auto px-4 sm:px-6 lg:px-8 ${maxWidthClass} ${className}`} {...props}>
       {children}
     </div>
   );

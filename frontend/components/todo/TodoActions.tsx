@@ -1,6 +1,5 @@
 import React from 'react';
 import Button from '@/components/ui/Button';
-
 interface TodoActionsProps {
   filter: 'all' | 'active' | 'completed';
   onFilterChange: (filter: 'all' | 'active' | 'completed') => void;
@@ -20,38 +19,41 @@ const TodoActions: React.FC<TodoActionsProps> = ({
 }) => {
   return (
     <div
-      className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-4 pt-4 border-t"
+      className="flex flex-col sm:flex-row justify-between items-center gap-4 mt-6 pt-4 border-t border-border"
       role="toolbar"
       aria-label="Task actions toolbar"
     >
-      <div className="text-sm text-gray-600" tabIndex={0}>
-        {activeCount} {activeCount === 1 ? 'item' : 'items'} left
+      <div className="text-sm font-medium text-foreground bg-muted px-3 py-1.5 rounded-full" tabIndex={0}>
+        {activeCount} {activeCount === 1 ? 'task' : 'tasks'} remaining
       </div>
 
-      <div className="flex flex-wrap justify-center gap-2" role="group" aria-label="Task filters">
+      <div className="flex flex-wrap justify-center gap-1.5" role="group" aria-label="Task filters">
         <Button
-          variant={filter === 'all' ? 'primary' : 'outline'}
+          variant={filter === 'all' ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => onFilterChange('all')}
           disabled={loading}
+          className={`px-3 ${filter === 'all' ? 'font-semibold' : 'font-normal'}`}
           aria-label={`Show all tasks (${activeCount + completedCount} total)`}
         >
           All
         </Button>
         <Button
-          variant={filter === 'active' ? 'primary' : 'outline'}
+          variant={filter === 'active' ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => onFilterChange('active')}
           disabled={loading}
+          className={`px-3 ${filter === 'active' ? 'font-semibold' : 'font-normal'}`}
           aria-label={`Show active tasks (${activeCount} remaining)`}
         >
           Active
         </Button>
         <Button
-          variant={filter === 'completed' ? 'primary' : 'outline'}
+          variant={filter === 'completed' ? 'primary' : 'ghost'}
           size="sm"
           onClick={() => onFilterChange('completed')}
           disabled={loading}
+          className={`px-3 ${filter === 'completed' ? 'font-semibold' : 'font-normal'}`}
           aria-label={`Show completed tasks (${completedCount} completed)`}
         >
           Completed
@@ -63,9 +65,10 @@ const TodoActions: React.FC<TodoActionsProps> = ({
         size="sm"
         onClick={clearCompleted}
         disabled={loading || completedCount === 0}
+        className="text-destructive hover:text-destructive/80"
         aria-label={`Clear ${completedCount} completed tasks`}
       >
-        Clear Completed ({completedCount})
+        Clear Completed
       </Button>
     </div>
   );
