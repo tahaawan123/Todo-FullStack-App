@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
 import { Task } from '@/lib/types/todo';
 import Input from '@/components/ui/Input';
@@ -43,7 +44,15 @@ const TodoForm: React.FC<TodoFormProps> = ({
   };
 
   return (
-    <form onSubmit={handleSubmit(onFormSubmit)} className="mb-6" role="form" aria-label={isEditing ? "Edit task form" : "Add new task form"}>
+    <motion.form
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.4 }}
+      onSubmit={handleSubmit(onFormSubmit)}
+      className="mb-6"
+      role="form"
+      aria-label={isEditing ? "Edit task form" : "Add new task form"}
+    >
       <div className="grid grid-cols-1 gap-5">
         <div>
           <label htmlFor="task-title" className="block text-sm font-medium text-foreground mb-2">
@@ -99,7 +108,7 @@ const TodoForm: React.FC<TodoFormProps> = ({
           )}
         </div>
       </div>
-    </form>
+    </motion.form>
   );
 };
 

@@ -23,11 +23,21 @@ interface TodoResponse {
 
 export const getAllTodos = async (
   userId: string,
-  timeoutMs: number = 10000
+  timeoutMs: number = 10000,
+  signal?: AbortSignal
 ): Promise<TodoResponse[]> => {
   try {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+
+    // If an external signal is provided, abort our controller when it aborts
+    if (signal) {
+      if (signal.aborted) {
+        controller.abort();
+      } else {
+        signal.addEventListener("abort", () => controller.abort(), { once: true });
+      }
+    }
 
     const response = await fetchWithAuth(`/api/${userId}/tasks`, {
       method: "GET",
@@ -45,6 +55,9 @@ export const getAllTodos = async (
 
     return await response.json();
   } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      throw error;
+    }
     if (error instanceof TypeError && error.message.includes("fetch")) {
       throw new Error("Network error: Unable to connect to the server. Please ensure the backend is running.");
     }

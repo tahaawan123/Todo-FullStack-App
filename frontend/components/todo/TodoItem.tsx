@@ -58,15 +58,22 @@ const TodoItem: React.FC<TodoItemProps> = ({
 
   return (
     <>
-      <li
-        className={`flex flex-col sm:flex-row items-start gap-4 p-4 rounded-lg border ${
+      <div
+        className={`flex flex-col sm:flex-row items-start gap-4 p-4 rounded-lg border relative overflow-hidden hover:-translate-y-0.5 hover:shadow-lg ${
           task.completed
-            ? 'bg-muted/50 border-success-200 dark:border-success-800'
+            ? 'bg-muted/50 border-success-200 dark:border-success-800 opacity-75'
             : 'bg-card border-border'
-        } shadow-sm hover:shadow-md transition-all duration-200`}
+        } shadow-sm transition-all duration-200`}
         role="listitem"
       >
-        <div className="flex items-start space-x-3 flex-1 min-w-0">
+        {/* Left accent bar */}
+        <div
+          className={`absolute left-0 top-0 bottom-0 w-[3px] ${
+            task.completed ? 'bg-success' : 'gradient-hero'
+          }`}
+        />
+
+        <div className="flex items-start space-x-3 flex-1 min-w-0 pl-2">
           <input
             type="checkbox"
             checked={task.completed}
@@ -161,7 +168,7 @@ const TodoItem: React.FC<TodoItemProps> = ({
             </Button>
           </div>
         )}
-      </li>
+      </div>
 
       <ConfirmDialog
         isOpen={showConfirmDialog}

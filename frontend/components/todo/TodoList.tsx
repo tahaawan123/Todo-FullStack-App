@@ -1,4 +1,5 @@
 import React from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { Task } from '@/lib/types/todo';
 import TodoItem from './TodoItem';
 import TodoActions from './TodoActions';
@@ -65,17 +66,27 @@ const TodoList: React.FC<TodoListProps> = ({
   return (
     <div>
       <ul className="space-y-3" role="list" aria-label="List of tasks">
-        {tasks.map((task) => (
-          <TodoItem
-            key={task.id}
-            task={task}
-            onToggle={onToggle}
-            onEdit={onEdit}
-            onDelete={onDelete}
-            toggleLoading={toggleLoading}
-            deleteLoading={deleteLoading}
-          />
-        ))}
+        <AnimatePresence mode="popLayout">
+          {tasks.map((task) => (
+            <motion.div
+              key={task.id}
+              layout
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, x: -100 }}
+              transition={{ duration: 0.3 }}
+            >
+              <TodoItem
+                task={task}
+                onToggle={onToggle}
+                onEdit={onEdit}
+                onDelete={onDelete}
+                toggleLoading={toggleLoading}
+                deleteLoading={deleteLoading}
+              />
+            </motion.div>
+          ))}
+        </AnimatePresence>
         {/* Show skeleton loaders for additional items being loaded */}
         {loading && tasks.length > 0 && (
           <>

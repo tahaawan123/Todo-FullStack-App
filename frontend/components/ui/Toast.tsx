@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import { CheckCircle, XCircle, AlertCircle, Info } from 'lucide-react';
 
 type ToastType = 'success' | 'error' | 'warning' | 'info';
@@ -33,8 +34,6 @@ const Toast: React.FC<ToastProps> = ({
       return () => clearTimeout(timer);
     }
   }, [isVisible, duration, onClose]);
-
-  if (!show) return null;
 
   const getTypeConfig = () => {
     switch (type) {
@@ -76,26 +75,34 @@ const Toast: React.FC<ToastProps> = ({
     }
   };
 
-  const { icon: Icon, bgColor, textColor, borderColor } = getTypeConfig();
+  const { icon: Icon, bgColor, borderColor } = getTypeConfig();
 
   return (
-    <div
-      className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-lg shadow-lg border ${borderColor} ${bgColor} transform transition-transform duration-300 ease-in-out animate-slide-in-right`}
-    >
-      <div className="flex items-start">
-        <Icon className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
-        <span className="flex-1">{message}</span>
-        <button
-          onClick={() => {
-            setShow(false);
-            setTimeout(onClose, 300); // Allow animation to complete
-          }}
-          className="ml-2 text-current hover:opacity-80 focus:outline-none"
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          initial={{ opacity: 0, x: 100 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 100 }}
+          transition={{ duration: 0.3, ease: 'easeOut' }}
+          className={`fixed top-4 right-4 z-50 max-w-md p-4 rounded-lg shadow-lg border ${borderColor} ${bgColor}`}
         >
-          <XCircle className="h-5 w-5" />
-        </button>
-      </div>
-    </div>
+          <div className="flex items-start">
+            <Icon className="h-5 w-5 mr-2 mt-0.5 flex-shrink-0" />
+            <span className="flex-1">{message}</span>
+            <button
+              onClick={() => {
+                setShow(false);
+                setTimeout(onClose, 300);
+              }}
+              className="ml-2 text-current hover:opacity-80 focus:outline-none"
+            >
+              <XCircle className="h-5 w-5" />
+            </button>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 };
 
