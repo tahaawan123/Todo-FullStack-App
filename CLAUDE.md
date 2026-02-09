@@ -212,6 +212,8 @@ See `.specify/memory/constitution.md` for code quality, testing, performance, se
 ## Active Technologies
 - TypeScript with Next.js 16+ and React 18+ + Next.js, React, Tailwind CSS, React Hook Form (for forms) (001-todo-frontend)
 - Local state management using React hooks (useState, useReducer) - no persistent storage (001-todo-frontend)
+- TypeScript (Next.js 16+, React 19) / Python 3.11+ (FastAPI) (005-auth-system)
+- Neon Serverless PostgreSQL (shared instance, separate table ownership) (005-auth-system)
 
 ## Recent Changes
 - 001-todo-frontend: Added TypeScript with Next.js 16+ and React 18+ + Next.js, React, Tailwind CSS, React Hook Form (for forms)
