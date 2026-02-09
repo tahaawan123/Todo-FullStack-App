@@ -7,7 +7,7 @@ import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
 
 interface TodoFormProps {
-  onSubmit: (data: Omit<Task, 'id' | 'completed' | 'createdAt' | 'updatedAt'>) => void;
+  onSubmit: (data: Omit<Task, 'id' | 'completed' | 'createdAt' | 'updatedAt' | 'userId'>) => void;
   initialValue?: string;
   isEditing?: boolean;
   onCancel?: () => void;

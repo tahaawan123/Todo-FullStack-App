@@ -1,10 +1,11 @@
 export interface Task {
-  id: number; // Backend uses integer IDs
+  id: number;
   title: string;
   description?: string | null;
   completed: boolean;
-  createdAt: Date; // Converted from ISO string for frontend use
-  updatedAt: Date; // Converted from ISO string for frontend use
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 export type TaskFilter = 'all' | 'active' | 'completed';
