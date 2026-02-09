@@ -33,7 +33,7 @@ export default function SignInForm() {
         setServerError(result.error.message || "Invalid credentials");
         return;
       }
-      router.push("/");
+      router.push("/dashboard");
     } catch {
       setServerError("An unexpected error occurred");
     } finally {

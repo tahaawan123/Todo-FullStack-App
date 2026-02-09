@@ -16,17 +16,22 @@ export const useTodos = () => {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (userId) {
-      loadTodos();
-    }
+    if (!userId) return;
+
+    const controller = new AbortController();
+    loadTodos(controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [userId]);
 
-  const loadTodos = async () => {
+  const loadTodos = async (signal?: AbortSignal) => {
     if (!userId) return;
     setLoading(true);
     setError(null);
     try {
-      const todos = await getAllTodos(userId, 10000);
+      const todos = await getAllTodos(userId, 10000, signal);
       const transformedTodos = todos.map((todo: any) => ({
         id: todo.id,
         title: todo.title,
@@ -38,6 +43,9 @@ export const useTodos = () => {
       }));
       setTasks(transformedTodos);
     } catch (err) {
+      if (err instanceof DOMException && err.name === 'AbortError') {
+        return;
+      }
       setError(err instanceof Error ? err.message : 'Failed to load todos');
       console.error(err);
     } finally {

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 import { Task } from '@/lib/types/todo';
 import { useTodos } from '@/lib/hooks/useTodos';
 import { countActiveTasks, countCompletedTasks } from '@/lib/utils/todoHelpers';
@@ -34,6 +35,8 @@ export default function DashboardClient() {
 
   const activeCount = countActiveTasks(allTasks);
   const completedCount = countCompletedTasks(allTasks);
+  const totalCount = allTasks.length;
+  const progressPercent = totalCount > 0 ? (completedCount / totalCount) * 100 : 0;
 
   const showToast = (message: string, type: 'success' | 'error' | 'warning' | 'info' = 'success') => {
     setToast({ isVisible: true, message, type });
@@ -100,7 +103,34 @@ export default function DashboardClient() {
     <div className="min-h-screen bg-background">
       <Header title="Todo App" />
       <Container maxWidth="2xl" className="py-8">
-        <div className="bg-card rounded-xl shadow-lg p-6 sm:p-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="bg-card rounded-xl shadow-lg p-6 sm:p-8"
+        >
+          {/* Progress Section */}
+          {totalCount > 0 && (
+            <div className="mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-sm font-medium text-foreground">
+                  {completedCount}/{totalCount} completed
+                </span>
+                <span className="text-sm text-muted-foreground">
+                  {Math.round(progressPercent)}%
+                </span>
+              </div>
+              <div className="w-full h-2.5 bg-muted rounded-full overflow-hidden">
+                <motion.div
+                  className="h-full rounded-full gradient-hero"
+                  initial={{ width: 0 }}
+                  animate={{ width: `${progressPercent}%` }}
+                  transition={{ duration: 0.5, ease: 'easeOut' }}
+                />
+              </div>
+            </div>
+          )}
+
           <TodoForm
             onSubmit={handleFormSubmit}
             submitLoading={loading}
@@ -141,7 +171,7 @@ export default function DashboardClient() {
             toggleLoading={toggleLoading}
             deleteLoading={deleteLoading}
           />
-        </div>
+        </motion.div>
       </Container>
       <Toast
         message={toast.message}

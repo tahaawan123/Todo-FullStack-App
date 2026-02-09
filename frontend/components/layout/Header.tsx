@@ -20,9 +20,9 @@ const Header: React.FC<HeaderProps> = ({ title = 'Todo App', className = '', ...
   };
 
   return (
-    <header className={`bg-background text-foreground shadow-lg py-4 px-4 sm:px-6 ${className}`} {...props}>
-      <div className="max-w-4xl mx-auto flex justify-between items-center">
-        <h1 className="text-2xl sm:text-3xl font-bold" tabIndex={0}>
+    <header className={`sticky top-0 z-40 backdrop-blur-md bg-background/80 text-foreground shadow-lg py-4 px-4 sm:px-6 ${className}`} {...props}>
+      <div className="max-w-6xl mx-auto flex justify-between items-center">
+        <h1 className="text-2xl sm:text-3xl font-bold gradient-text" tabIndex={0}>
           {title}
         </h1>
         <div className="flex items-center gap-3">
@@ -50,6 +50,8 @@ const Header: React.FC<HeaderProps> = ({ title = 'Todo App', className = '', ...
           <ThemeToggle />
         </div>
       </div>
+      {/* Gradient accent line */}
+      <div className="absolute bottom-0 left-0 right-0 h-[2px] gradient-hero" />
     </header>
   );
 };
