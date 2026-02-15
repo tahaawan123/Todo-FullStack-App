@@ -1,6 +1,22 @@
-# OS
-.DS_Store
-Thumbs.db
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+venv/
+
+# Environment
+.env
+.env.local
+.env*.local
+
+# Build
+dist/
+build/
+*.egg-info/
+.next/
 
 # IDE
 .vscode/
@@ -9,10 +25,14 @@ Thumbs.db
 *.swo
 *~
 
-# Claude Code
-.claude/
+# OS
+.DS_Store
+Thumbs.db
+*.tmp
 
-# Environment
-.env
-.env.*
-!.env.example
+# Logs
+*.log
+
+# Testing
+coverage/
+.pytest_cache/

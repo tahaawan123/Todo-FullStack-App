@@ -1,6 +1,7 @@
 from sqlmodel import create_engine, Session
 from typing import Generator
 import os
+from contextlib import contextmanager
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -21,3 +22,23 @@ def get_session() -> Generator[Session, None, None]:
     """
     with Session(engine) as session:
         yield session
+
+@contextmanager
+def get_db_context():
+    """
+    Context manager for getting a database session for use outside of FastAPI dependencies.
+
+    Usage:
+        with get_db_context() as db:
+            # Perform database operations
+            pass
+    """
+    session = Session(engine)
+    try:
+        yield session
+        session.commit()
+    except Exception:
+        session.rollback()
+        raise
+    finally:
+        session.close()
