@@ -1,0 +1,274 @@
+openapi: "3.1.0"
+info:
+  title: Todo AI Chatbot API
+  version: "1.0.0"
+  description: Chat endpoint for AI-powered todo management via natural language.
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+
+paths:
+  /api/{user_id}/chat:
+    post:
+      operationId: sendChatMessage
+      summary: Send a message to the AI todo assistant
+      description: |
+        Sends a natural language message to the AI agent. The agent interprets
+        the message, calls appropriate MCP tools (add/list/complete/delete/update
+        tasks), and returns a response. Conversation history is persisted in the
+        database. If no conversation_id is provided, a new conversation is created.
+      tags:
+        - chat
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The authenticated user's ID (must match JWT sub claim)
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChatRequest"
+            examples:
+              addTask:
+                summary: Add a task
+                value:
+                  message: "add task buy groceries"
+              listTasks:
+                summary: List tasks
+                value:
+                  message: "show my tasks"
+                  conversation_id: 1
+              completeTask:
+                summary: Complete a task
+                value:
+                  message: "complete task 3"
+                  conversation_id: 1
+              greeting:
+                summary: Simple greeting
+                value:
+                  message: "hello"
+                  conversation_id: 1
+      responses:
+        "200":
+          description: Successful chat response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatResponse"
+              examples:
+                taskAdded:
+                  summary: Task added successfully
+                  value:
+                    conversation_id: 1
+                    response: "I've added 'buy groceries' to your task list! (Task #5)"
+                    tool_calls:
+                      - "add_task"
+                taskListed:
+                  summary: Tasks listed
+                  value:
+                    conversation_id: 1
+                    response: "Here are your tasks:\n1. buy groceries (pending)\n2. call doctor (completed)"
+                    tool_calls:
+                      - "list_tasks"
+                greeting:
+                  summary: Direct response (no tools)
+                  value:
+                    conversation_id: 1
+                    response: "Hello! How can I help you manage your tasks today?"
+                    tool_calls: []
+        "401":
+          description: Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Could not validate credentials"
+        "403":
+          description: User ID mismatch (JWT sub != path user_id)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "Not authorized to access this user's resources"
+        "422":
+          description: Validation error (missing message, message too long)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ValidationErrorResponse"
+        "503":
+          description: AI service temporarily unavailable
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+              example:
+                detail: "AI service is temporarily unavailable. Please try again later."
+
+  /api/{user_id}/chat/history:
+    get:
+      operationId: getChatHistory
+      summary: Get conversation history for the current user
+      description: |
+        Returns the user's most recent conversation with all its messages,
+        ordered chronologically. Used to restore chat state on page load.
+      tags:
+        - chat
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: user_id
+          in: path
+          required: true
+          description: The authenticated user's ID (must match JWT sub claim)
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Conversation history (or empty if no conversation exists)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChatHistoryResponse"
+              examples:
+                withHistory:
+                  summary: User has existing conversation
+                  value:
+                    conversation_id: 1
+                    messages:
+                      - id: 1
+                        role: "user"
+                        content: "add task buy milk"
+                        created_at: "2026-02-10T14:30:00Z"
+                      - id: 2
+                        role: "assistant"
+                        content: "I've added 'buy milk' to your task list! (Task #1)"
+                        created_at: "2026-02-10T14:30:05Z"
+                noHistory:
+                  summary: No conversation yet
+                  value:
+                    conversation_id: null
+                    messages: []
+        "401":
+          description: Missing or invalid JWT token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "403":
+          description: User ID mismatch
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: JWT token from Better Auth (acquired via authClient.token())
+
+  schemas:
+    ChatRequest:
+      type: object
+      required:
+        - message
+      properties:
+        message:
+          type: string
+          minLength: 1
+          maxLength: 10000
+          description: Natural language message from the user
+        conversation_id:
+          type: integer
+          nullable: true
+          description: Existing conversation ID. If null/omitted, a new conversation is created.
+
+    ChatResponse:
+      type: object
+      required:
+        - conversation_id
+        - response
+        - tool_calls
+      properties:
+        conversation_id:
+          type: integer
+          description: The conversation ID (new or existing)
+        response:
+          type: string
+          description: The AI assistant's natural language response
+        tool_calls:
+          type: array
+          items:
+            type: string
+          description: List of MCP tool names invoked during this turn (empty if none)
+
+    ChatHistoryResponse:
+      type: object
+      required:
+        - conversation_id
+        - messages
+      properties:
+        conversation_id:
+          type: integer
+          nullable: true
+          description: The conversation ID, or null if no conversation exists
+        messages:
+          type: array
+          items:
+            $ref: "#/components/schemas/MessageItem"
+
+    MessageItem:
+      type: object
+      required:
+        - id
+        - role
+        - content
+        - created_at
+      properties:
+        id:
+          type: integer
+        role:
+          type: string
+          enum:
+            - user
+            - assistant
+        content:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+
+    ValidationErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: array
+          items:
+            type: object
+            properties:
+              loc:
+                type: array
+                items:
+                  type: string
+              msg:
+                type: string
+              type:
+                type: string

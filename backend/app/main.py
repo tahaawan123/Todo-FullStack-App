@@ -4,6 +4,10 @@ from sqlmodel import SQLModel
 from .database.database import engine
 from .logging_config import logger
 from .routers import todo_router
+from .routers.chat_router import router as chat_router
+from .models.todo_model import Todo  # noqa: F401
+from .models.conversation_model import Conversation  # noqa: F401
+from .models.message_model import Message  # noqa: F401
 
 app = FastAPI(
     title="Todo API",
@@ -24,6 +28,7 @@ app.add_middleware(
 )
 
 app.include_router(todo_router.router, prefix="/api", tags=["todos"])
+app.include_router(chat_router, prefix="/api", tags=["chat"])  # Routes: /api/{user_id}/chat*
 
 
 @app.on_event("startup")

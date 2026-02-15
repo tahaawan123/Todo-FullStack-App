@@ -1,6 +1,6 @@
 # Todo App Frontend
 
-A Next.js frontend for the Todo Web Application with multi-user authentication via Better Auth and JWT-based API access.
+A Next.js frontend for the Todo Web Application with multi-user authentication via Better Auth, JWT-based API access, and an inline AI chatbot.
 
 ## Tech Stack
 
@@ -10,6 +10,7 @@ A Next.js frontend for the Todo Web Application with multi-user authentication v
 - **Drizzle ORM** with `@neondatabase/serverless` for auth database tables
 - **Tailwind CSS** for styling
 - **React Hook Form** for form handling
+- **Framer Motion** for animations
 
 ## Features
 
@@ -17,10 +18,11 @@ A Next.js frontend for the Todo Web Application with multi-user authentication v
 - JWT-authenticated API calls to the backend
 - Per-user task isolation (each user sees only their tasks)
 - Route protection via Next.js middleware
-- Sign-out with session cleanup
 - Full CRUD operations for tasks
-- Optimistic updates with error rollback
 - Task filtering (all/active/completed) and search
+- AI chatbot in a floating bubble panel (no separate page)
+- Conversation persistence across page navigation
+- Rate-limit-aware chat UI with friendly messages
 - Dark/light theme toggle
 - Responsive UI
 
@@ -31,7 +33,7 @@ frontend/
 ├── app/
 │   ├── page.tsx               # Dashboard (server-side auth check)
 │   ├── dashboard-client.tsx   # Client-side dashboard component
-│   ├── layout.tsx             # Root layout with AuthProvider
+│   ├── layout.tsx             # Root layout with AuthProvider + ChatBubble
 │   ├── globals.css            # Global styles
 │   ├── signin/
 │   │   └── page.tsx           # Sign-in page
@@ -43,8 +45,10 @@ frontend/
 ├── components/
 │   ├── auth/
 │   │   ├── AuthProvider.tsx   # Session context provider
-│   │   ├── SignInForm.tsx     # Sign-in form with React Hook Form
-│   │   └── SignUpForm.tsx     # Sign-up form with React Hook Form
+│   │   ├── SignInForm.tsx     # Sign-in form
+│   │   └── SignUpForm.tsx     # Sign-up form
+│   ├── chat/
+│   │   └── ChatBubble.tsx     # Floating chat bubble with inline panel
 │   ├── layout/
 │   │   ├── Header.tsx         # App header with user name + sign-out
 │   │   └── Container.tsx      # Layout container
@@ -55,13 +59,15 @@ frontend/
 │   └── schema.ts              # Auth table definitions (user, session, account, jwks)
 ├── drizzle/                   # Generated migration SQL files
 ├── lib/
-│   ├── auth.ts                # Better Auth server instance (JWT + Drizzle + nextCookies)
+│   ├── auth.ts                # Better Auth server instance
 │   ├── auth-client.ts         # Better Auth client instance (jwtClient plugin)
 │   ├── api.ts                 # Authenticated fetch utility (attaches Bearer token)
 │   ├── hooks/
-│   │   └── useTodos.ts        # Todo state management hook (uses auth session)
+│   │   ├── useTodos.ts        # Todo state management hook
+│   │   └── useChat.ts         # Chat state management hook
 │   ├── services/
-│   │   └── todoService.ts     # Backend API calls (authenticated, user-scoped)
+│   │   ├── todoService.ts     # Todo API calls (authenticated, user-scoped)
+│   │   └── chatService.ts     # Chat API calls (authenticated, user-scoped)
 │   ├── types/
 │   │   └── todo.ts            # TypeScript interfaces (Task, TaskFilter)
 │   └── utils/
@@ -94,9 +100,9 @@ cp .env.example .env.local
 | Variable | Required | Description |
 |----------|----------|-------------|
 | `BETTER_AUTH_SECRET` | Yes | Secret for session encryption (`openssl rand -base64 32`) |
-| `BETTER_AUTH_URL` | Yes | Frontend URL (`http://localhost:3000`) |
+| `BETTER_AUTH_URL` | Yes | Frontend URL (e.g. `http://localhost:3000`) |
 | `DATABASE_URL` | Yes | Neon PostgreSQL connection string |
-| `NEXT_PUBLIC_BACKEND_URL` | Yes | Backend API URL (`http://localhost:8000`) |
+| `NEXT_PUBLIC_BACKEND_URL` | Yes | Backend API URL (e.g. `http://localhost:8000`) |
 
 ### 3. Run database migrations
 
@@ -122,9 +128,9 @@ The frontend will be available at `http://localhost:3000`.
 5. **API calls**: `lib/api.ts` fetches JWT via `authClient.token()` and attaches `Authorization: Bearer <token>`
 6. **Sign-out**: Header button calls `authClient.signOut()`, clears session, redirects to `/signin`
 
-## API Endpoints Used
+## Backend API Endpoints Used
 
-All task endpoints require authentication and use the pattern `/api/{userId}/tasks`:
+### Task Endpoints
 
 | Method | Endpoint | Description |
 |--------|----------|-------------|
@@ -133,6 +139,25 @@ All task endpoints require authentication and use the pattern `/api/{userId}/tas
 | `PUT` | `/api/{userId}/tasks/{id}` | Update a task |
 | `PATCH` | `/api/{userId}/tasks/{id}/complete` | Toggle completion |
 | `DELETE` | `/api/{userId}/tasks/{id}` | Delete a task |
+
+### Chat Endpoints
+
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `POST` | `/api/{userId}/chat` | Send message to AI assistant |
+| `GET` | `/api/{userId}/chat/history` | Load recent conversation history |
+
+## AI Chatbot
+
+The chatbot is accessible via a **floating bubble** in the bottom-right corner of all authenticated pages. Clicking the bubble opens an inline chat panel with:
+
+- Message list with user/assistant bubbles
+- Text input with send button
+- Typing indicator during AI processing
+- "New Chat" button to start a fresh conversation
+- Friendly rate-limit message when sending too quickly (10 msgs/min limit)
+
+The panel stays open while navigating between pages and maintains conversation state in memory.
 
 ## Database Tables (managed by Better Auth via Drizzle)
 
@@ -145,7 +170,10 @@ All task endpoints require authentication and use the pattern `/api/{userId}/tas
 
 ## Troubleshooting
 
-- **CORS errors**: Ensure the backend allows `http://localhost:3000` as an origin
-- **401 on API calls**: Check that the frontend is running (backend needs JWKS endpoint)
-- **Migration errors**: If tables already exist, use `npx drizzle-kit push` instead
-- **Session issues**: Clear browser cookies and sign in again
+| Issue | Fix |
+|-------|-----|
+| CORS errors | Ensure backend allows `http://localhost:3000` as an origin |
+| 401 on API calls | Check that the frontend is running (backend needs JWKS endpoint) |
+| Migration errors | If tables already exist, use `npx drizzle-kit push` instead |
+| Session issues | Clear browser cookies and sign in again |
+| Chat shows rate-limit message | Wait ~60 seconds before sending more messages |

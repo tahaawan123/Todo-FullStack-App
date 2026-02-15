@@ -28,9 +28,17 @@ const Header: React.FC<HeaderProps> = ({ title = 'Todo App', className = '', ...
         <div className="flex items-center gap-3">
           {user && (
             <>
-              <span className="text-sm text-muted-foreground hidden sm:inline">
+              <span className="text-sm text-muted-foreground hidden sm:inline mr-4">
                 {user.name}
               </span>
+              <nav className="mr-4 hidden md:flex space-x-2">
+                <a
+                  href="/dashboard"
+                  className="text-sm px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition-colors"
+                >
+                  Dashboard
+                </a>
+              </nav>
               <button
                 onClick={handleSignOut}
                 className="text-sm px-3 py-1.5 rounded-lg border border-border hover:bg-muted transition-colors"

@@ -1,7 +1,9 @@
-fastapi==0.104.1
-uvicorn[standard]==0.24.0
+fastapi>=0.115.0
+uvicorn[standard]>=0.24.0
 sqlmodel==0.0.16
 python-dotenv==1.0.0
 psycopg2-binary==2.9.9
-pydantic==2.5.0
+pydantic>=2.5.0
 PyJWT[crypto]==2.11.0
+google-genai
+mcp
