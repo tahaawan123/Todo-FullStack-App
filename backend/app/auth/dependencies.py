@@ -1,3 +1,4 @@
+import jwt
 from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
@@ -16,20 +17,30 @@ class TokenPayload(BaseModel):
 async def get_current_user(
     token: Annotated[str, Depends(oauth2_scheme)],
 ) -> TokenPayload:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
     try:
         payload = verify_token(token)
         user_id = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
+        email = payload.get("email")
+        if user_id is None or email is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Could not validate credentials",
+                headers={"WWW-Authenticate": "Bearer"},
+            )
         return TokenPayload(
             sub=user_id,
-            email=payload.get("email"),
+            email=email,
             name=payload.get("name"),
         )
-    except Exception:
-        raise credentials_exception
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except jwt.InvalidTokenError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )

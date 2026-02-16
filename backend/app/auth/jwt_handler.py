@@ -1,21 +1,21 @@
 import os
 import jwt
-from jwt import PyJWKClient
 
-BETTER_AUTH_URL = os.getenv("BETTER_AUTH_URL", "http://localhost:3000")
-JWKS_URL = f"{BETTER_AUTH_URL}/api/auth/jwks"
-JWT_ALGORITHM = "EdDSA"
+JWT_SECRET = os.getenv("JWT_SECRET")
+if not JWT_SECRET:
+    raise RuntimeError("JWT_SECRET environment variable is required")
 
-jwks_client = PyJWKClient(JWKS_URL)
+JWT_ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", "60"))
 
 
 def verify_token(token: str) -> dict:
-    signing_key = jwks_client.get_signing_key_from_jwt(token)
     return jwt.decode(
         token,
-        signing_key.key,
+        JWT_SECRET,
         algorithms=[JWT_ALGORITHM],
-        issuer=BETTER_AUTH_URL,
-        audience=BETTER_AUTH_URL,
-        options={"require": ["exp", "sub"]},
+        options={
+            "require": ["exp", "iat", "sub"],
+            "verify_aud": False,
+        },
     )

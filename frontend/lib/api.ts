@@ -1,4 +1,4 @@
-import { authClient } from "./auth-client";
+import { authClient, signOut } from "./auth-client";
 
 const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:8000";
 
@@ -26,10 +26,14 @@ export async function fetchWithAuth(
   });
 
   if (response.status === 401) {
+    const body = await response.json().catch(() => ({}));
     if (typeof window !== "undefined") {
+      if (body.detail === "Token expired") {
+        await signOut().catch(() => {});
+      }
       window.location.href = "/signin";
     }
-    throw new Error("Not authenticated");
+    throw new Error(body.detail || "Not authenticated");
   }
 
   return response;
