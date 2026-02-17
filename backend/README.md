@@ -1,3 +1,12 @@
+---
+title: Todo App Backend
+emoji: ✅
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 7860
+---
+
 # Todo App Backend
 
 A FastAPI backend for the Todo Web Application with JWT-authenticated endpoints, per-user task isolation, and an AI chatbot powered by Google Gemini.
