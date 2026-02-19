@@ -5,6 +5,12 @@ import { Task, TaskFilter } from '@/lib/types/todo';
 import { useSession } from '@/lib/auth-client';
 import { getAllTodos, createTodo, updateTodo, deleteTodo, toggleTodoCompletion } from '../services/todoService';
 
+// Backend stores UTC datetimes without timezone suffix (naive). Appending 'Z'
+// tells JavaScript to parse as UTC so toLocaleTimeString() converts correctly
+// to the user's local timezone.
+const parseUTC = (s: string) =>
+  new Date(s.endsWith('Z') || s.includes('+') ? s : s + 'Z');
+
 export const useTodos = () => {
   const { data: session } = useSession();
   const userId = session?.user?.id;
@@ -38,8 +44,8 @@ export const useTodos = () => {
         description: todo.description,
         completed: todo.completed,
         userId: todo.user_id,
-        createdAt: new Date(todo.created_at),
-        updatedAt: new Date(todo.updated_at),
+        createdAt: parseUTC(todo.created_at),
+        updatedAt: parseUTC(todo.updated_at),
       }));
       setTasks(transformedTodos);
     } catch (err) {
@@ -76,8 +82,8 @@ export const useTodos = () => {
         description: newTodo.description,
         completed: newTodo.completed,
         userId: newTodo.user_id,
-        createdAt: new Date(newTodo.created_at),
-        updatedAt: new Date(newTodo.updated_at),
+        createdAt: parseUTC(newTodo.created_at),
+        updatedAt: parseUTC(newTodo.updated_at),
       };
 
       setTasks(prev => prev.map(task => (task.id === tempId ? newTask : task)));
@@ -109,8 +115,8 @@ export const useTodos = () => {
         description: updatedTodo.description,
         completed: updatedTodo.completed,
         userId: updatedTodo.user_id,
-        createdAt: new Date(updatedTodo.created_at),
-        updatedAt: new Date(updatedTodo.updated_at),
+        createdAt: parseUTC(updatedTodo.created_at),
+        updatedAt: parseUTC(updatedTodo.updated_at),
       };
 
       setTasks(prev => prev.map(task => (task.id === id ? { ...updatedTask } : task)));
@@ -160,8 +166,8 @@ export const useTodos = () => {
         description: updatedTodo.description,
         completed: updatedTodo.completed,
         userId: updatedTodo.user_id,
-        createdAt: new Date(updatedTodo.created_at),
-        updatedAt: new Date(updatedTodo.updated_at),
+        createdAt: parseUTC(updatedTodo.created_at),
+        updatedAt: parseUTC(updatedTodo.updated_at),
       };
 
       setTasks(prev => prev.map(task => (task.id === id ? { ...updatedTask } : task)));

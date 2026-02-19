@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from typing import Annotated, List
+from datetime import datetime, timezone
 from ..database.database import get_session
 from ..models.todo_model import Todo, TodoCreate, TodoRead, TodoUpdate
 from ..schemas.todo_schema import TodoToggleComplete
@@ -77,6 +78,7 @@ def update_todo(
     update_data = todo.model_dump(exclude_unset=True)
     for key, value in update_data.items():
         setattr(db_todo, key, value)
+    db_todo.updated_at = datetime.now(timezone.utc)
     session.add(db_todo)
     session.commit()
     session.refresh(db_todo)
@@ -97,6 +99,7 @@ def toggle_todo_completion(
     if not db_todo:
         raise TodoNotFoundException(todo_id)
     db_todo.completed = toggle_data.completed
+    db_todo.updated_at = datetime.now(timezone.utc)
     session.add(db_todo)
     session.commit()
     session.refresh(db_todo)

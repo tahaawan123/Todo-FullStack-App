@@ -33,7 +33,10 @@ export default function SignInForm() {
         setServerError(result.error.message || "Invalid credentials");
         return;
       }
-      router.push("/dashboard");
+      // Hard navigation ensures the browser sends the newly-set session
+      // cookie on the next request (router.push does a soft navigation that
+      // can miss cookies set in the current response cycle).
+      window.location.href = "/dashboard";
     } catch {
       setServerError("An unexpected error occurred");
     } finally {

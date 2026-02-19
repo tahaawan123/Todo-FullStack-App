@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { useRouter } from 'next/navigation';
 import { ThemeToggle } from '@/components/ui/ThemeToggle';
 import { useAuth } from '@/components/auth/AuthProvider';
 import { authClient } from '@/lib/auth-client';
@@ -12,11 +11,13 @@ interface HeaderProps extends React.HTMLAttributes<HTMLHeadElement> {
 
 const Header: React.FC<HeaderProps> = ({ title = 'Todo App', className = '', ...props }) => {
   const { user } = useAuth();
-  const router = useRouter();
 
   const handleSignOut = async () => {
     await authClient.signOut();
-    router.push('/signin');
+    // Hard navigation clears all client state immediately — prevents the
+    // jwtClient plugin from firing GET /api/auth/token after the session
+    // cookie is gone (which produces a spurious 401 with soft navigation).
+    window.location.href = '/signin';
   };
 
   return (
